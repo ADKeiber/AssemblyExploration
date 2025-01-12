@@ -5,8 +5,8 @@ STDIN equ 0
 STDOUT equ 1
 
 segment .bss
-   input1 resb 12    ; reserves 10 bytes for input1 (can store 10 characters)
-   input2 resb 12    ; also reserves 10 bytes
+   input1 resb 10    ; reserves 10 bytes for input1 (can store 10 characters)
+   input2 resb 10    ; also reserves 10 bytes
    finalString resb 20 ;contains the two string combines
 
 segment .data
@@ -28,7 +28,7 @@ _start:
    mov eax, 3     ; system call to read data
    mov ebx, 0     ; std in
    mov ecx, input1; 
-   mov edx, 10    ; sets the bytes size to be populated to 10
+   mov edx, 11    ; sets the bytes size to be populated to 10
    int 0x80
 
    mov eax, 4     ; system call to write data
@@ -40,8 +40,10 @@ _start:
    mov eax, 3     ; system call to read data
    mov ebx, 0     ; std in
    mov ecx, input2; 
-   mov edx, 10    ; sets the bytes size to be populated to 10
+   mov edx, 11    ; sets the bytes size to be populated to 10
    int 0x80
+   ; now time for something new!
+   ; goal: create a loop (till zero) the length of inputs and take a character from each input 
 
 exit:
    mov eax, 1     ; system call to exit
