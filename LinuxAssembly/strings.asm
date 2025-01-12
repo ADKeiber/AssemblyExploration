@@ -1,7 +1,12 @@
+SYS_EXIT equ 1
+SYS_READ equ 3
+SYS_WRITE equ 4
+STDIN equ 0
+STDOUT equ 1
 
 segment .bss
-   input1 resb 10    ; reserves 10 bytes for input1 (can store 10 characters)
-   input2 resb 10    ; also reserves 10 bytes
+   input1 resb 12    ; reserves 10 bytes for input1 (can store 10 characters)
+   input2 resb 12    ; also reserves 10 bytes
    finalString resb 20 ;contains the two string combines
 
 segment .data
