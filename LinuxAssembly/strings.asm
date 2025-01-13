@@ -42,11 +42,28 @@ _start:
    mov ecx, input2; 
    mov edx, 11    ; sets the bytes size to be populated to 10
    int 0x80
-   ; now time for something new!
-   ; goal: create a loop (till zero) the length of inputs and take a character from each input 
+;WORK IN PROGRESS  BELOW!!
+   xor ecx, ecx
+   mov ecx, 10
+   mov esi, [input1] 
+   mov edi, [input2]
+
+;combine:
+;   add eax, [esi]
+;   add eax, [edi]
+;   loop combine
+   shl esi, 1
+;   lea ecx, [input1 ]
+   mov ecx, [esi]
+;   mov ecx, [esi] 
+
+   mov eax, 4     ; system call to write data
+   mov ebx, 1     ; std out 
+   mov edx, 20  ; sets the length of the expected output
+   int 0x80       ; calls the kernel and output the message
+
 
 exit:
    mov eax, 1     ; system call to exit
    xor ebx, ebx   ; sets ebx to zero with xor 
    int 0x80       ; kernel call (exits the system)
-
