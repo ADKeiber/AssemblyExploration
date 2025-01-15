@@ -1,12 +1,11 @@
 section .data
-	num DB 1
-	num2 DB 2
-
+   string1 DB "ABA",0
+   string2 DB "CDE",0
 section .text
+
 global _start
 
 _start:
-	MOV bh, [num]
-	MOV ch, [num2]
-	mov eax, 1
-	INT 80h
+   MOV bl, [string1]
+   mov eax, 1
+   INT 80h
