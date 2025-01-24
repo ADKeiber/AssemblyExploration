@@ -1,5 +1,6 @@
 ASM = nasm
-
+cc16=/usr/bin/wcc/binl/wcc
+CFLAGS=-s -wz -ms -zl -zq
 SRC_DIR=src
 BUILD_DIR=build
 #
