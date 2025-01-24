@@ -34,16 +34,131 @@ main:
 
    MOV sp, 0x7C00 ; Stets the stack to the starting point of the application so we can 'grow' the stack downwards
 
-   MOV [ebr_drive_number], dl
-   MOV ax, 1
-   MOV cl, 1
-   MOV bx, 0x7e00 ; Buffer located on the disk
-   call disk_read
+   ;MOV [ebr_drive_number], dl
+   ;MOV ax, 1
+   ;MOV cl, 1
+   ;MOV bx, 0x7e00 ; Buffer located on the disk
+   ;call disk_read
 
    MOV si, os_boot_msg
    CALL print
    
+   ; 4 segments in fat 12
+   ; reserved segment (BDB_RESERVED_SECTOR): 1 sector
+   ; FAT:9 * 2 = 18 sectors
+   ; Root Director: Starts at 19th sector
+   ; Data
+   
+   MOV ax, [bdb_sectors_per_fat]
+   MOV bl, [bdb_fat_count]
+   XOR bh,bh
+   MUL bx
+   ADD ax, [bdb_reserved_sector] ; LBA of root directory
+   PUSH ax
+
+   MOV ax, [bdb_dir_entries_count]
+   SHL ax, 5 ; ax *= 32
+   XOR dx,dx
+   DIV word [bdb_bytes_per_sector] ; (32 * num of entires) / bytes per sector = total sectors needed to read
+
+
+   TEST dx, dx
+   JZ rootDirAfter
+   INC ax
+
+rootDirAfter:
+   MOV cl, al
+   POP ax
+   MOV dl, [ebr_drive_number]
+   MOV bx, buffer
+   CALL disk_read
+   
+   XOR bx, bx
+   MOV di, buffer
+
+searchKernel:
+   MOV si, file_kernel_bin
+   MOV cx, 11
+   PUSH di 
+   REPE CMPSB
+   POP di
+   JE foundKernel
+
+   ADD di, 32
+   INC bx
+   CMP bx, [bdb_dir_entries_count]
+   JL searchKernel
+   
+   JMP kernelNotFound
+
+kernelNotFound:
+   MOV si, msg_kernel_not_found
+   CALL print
+
+   HLT
+   JMP halt
+
+foundKernel:
+   MOV ax, [di+26] ; di is address of the kernel and 26 is the offset to the first cluster
+   MOV [kernel_cluster], ax
+
+   MOV ax, [bdb_reserved_sector]
+   MOV bx, buffer
+   MOV cl, [bdb_sectors_per_fat]
+   MOV dl, [ebr_drive_number]
+
+   CALL disk_read
+   
+   MOV bx, kernel_load_segment
+   MOV es, bx
+   MOV bx, kernel_load_offset
+
+loadKernelLoop:
+   MOV ax, [kernel_cluster]
+   ADD ax, 31
+   MOV cl, 1
+   MOV dl, [ebr_drive_number]
+
+   CALL disk_read
+
+   ADD bx, [bdb_bytes_per_sector]
+
+   MOV ax, [kernel_cluster] ;(kernel_cluster * 3) / 2 = find next cluster
+   MOV cx, 3
+   MUL cx
+   MOV cx, 2
+   DIV cx
+
+   MOV si, buffer
+   ADD si, ax
+   MOV ax, [ds:si]
+
+   OR dx,dx
+   JZ even
+
+odd:
+   SHR ax, 4
+   JMP nextClusterAfter
+even:
+   AND ax, 0x0FFF
+
+nextClusterAfter:
+   CMP ax, 0x0ff8
+   JAE readFinish
+
+   MOV [kernel_cluster], ax
+   JMP loadKernelLoop
+
+readFinish:
+   MOV dl, [ebr_drive_number]
+   MOV ax, kernel_load_segment
+   MOV ds, ax
+   MOV es, ax
+
+   JMP kernel_load_segment:kernel_load_offset
+
    HTL
+
 
 halt:
    JMP halt
@@ -57,7 +172,7 @@ lba_to_chs:
    PUSH dx
 
    XOR dx, dx
-   DIV word [bdb_secotrs_per_track] ; LBA % secotrs per track + 1 <- sector
+   DIV word [bdb_sectors_per_track] ; LBA % secotrs per track + 1 <- sector
    INC dx   ; sector
    MOV cx, dx
 
@@ -97,7 +212,7 @@ retry:
 
    DEC di
    TEST di,di
-   JNX retry
+   JNE retry
 
 failDiskRead:
    MOV si, read_failure
@@ -146,6 +261,15 @@ done_print:
 
 os_boot_msg: DB 'Our OS has booted!', 0x0D, 0x0A, 0 ; new line character and sentinel value
 read_failure DB 'Failed to read disk!', 0x0D, 0x0A, 0
+file_kernel_bin DB 'KERNEL  BIN'
+msg_kernel_not_found DB 'KERNEL.BIN not found!'
+kernel_cluster DW 0
+
+kernel_load_segment EQU 0x2000
+kernel_load_offset EQU 0
+
 TIMES 510-($-$$) DB 0 ; '$-$$' gives the the size of the application
 DW 0AA55h
 
+buffer:
+   
