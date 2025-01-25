@@ -4,26 +4,26 @@ BITS 16		; The bit amount of the OS. MOST os bootloaders are 16 bits for backwor
 JMP SHORT main ; SHORT JUMP is jumping into something inside of this file
 NOP
 
-bdb_oem:	  DB    'MSWIN4.1'
-bdb_bytes_per_sector:	DW    512
-bdb_sectors_per_clustor:DB    1
-bdb_reserved_sector:	DW    1
-bdb_fat_count:		DB    2
-bdb_dir_entries_count:	DW    0E0h
-bdb_total_sectors:	DW    2880
-bdb_media_descriptor_type:  DB 0F0h
-bdb_sectors_per_fat:	DW    9
-bdb_sectors_per_track:	DW    18
-bdb_heads:		DW    2
-bdb_hidden_sectors:	DW    0
-bdb_large_sector_count:	DD    0
+bdb_oem:	                  DB    'MSWIN4.1'
+bdb_bytes_per_sector:	   DW    512
+bdb_sectors_per_cluster:   DB    1
+bdb_reserved_sectors:	   DW    1
+bdb_fat_count:		         DB    2
+bdb_dir_entries_count:	   DW    0E0h
+bdb_total_sectors:	      DW    2880
+bdb_media_descriptor_type: DB    0F0h
+bdb_sectors_per_fat:	      DW    9
+bdb_sectors_per_track:	   DW    18
+bdb_heads:		            DW    2
+bdb_hidden_sectors:	      DW    0
+bdb_large_sector_count:	   DD    0
 
-ebr_drive_number:	DB    0
-			DB    0
-ebr_signature:		DB    29h
-ebr_volume_id:		DB    12h,34h,56h,78h
-ebr_volume_label:	DB    'Keiber OS  '
-ebr_system_id:		DB    'FAT12   '
+ebr_drive_number:	         DB    0
+			                  DB    0
+ebr_signature:		         DB    29h
+ebr_volume_id:		         DB    12h,34h,56h,78h
+ebr_volume_label:	         DB    'Keiber OS  '
+ebr_system_id:		         DB    'FAT12   '
 
 main:
    MOV ax, 0
@@ -53,7 +53,7 @@ main:
    MOV bl, [bdb_fat_count]
    XOR bh,bh
    MUL bx
-   ADD ax, [bdb_reserved_sector] ; LBA of root directory
+   ADD ax, [bdb_reserved_sectors] ; LBA of root directory
    PUSH ax
 
    MOV ax, [bdb_dir_entries_count]
@@ -102,7 +102,7 @@ foundKernel:
    MOV ax, [di+26] ; di is address of the kernel and 26 is the offset to the first cluster
    MOV [kernel_cluster], ax
 
-   MOV ax, [bdb_reserved_sector]
+   MOV ax, [bdb_reserved_sectors]
    MOV bx, buffer
    MOV cl, [bdb_sectors_per_fat]
    MOV dl, [ebr_drive_number]

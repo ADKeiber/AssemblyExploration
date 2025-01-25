@@ -1,7 +1,7 @@
 Open Watcom Linker Version 2.0 beta Jan 23 2025 02:09:36 (32-bit)
 Copyright (c) 2002-2025 The Open Watcom Contributors. All Rights Reserved.
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       25/01/24 21:15:08
+Created on:       25/01/25 09:03:28
 Executable Image: build/kernel.bin
 creating a RAW Binary Image executable
 
@@ -13,7 +13,7 @@ creating a RAW Binary Image executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0000004e             00000014
+DGROUP                          00000062             00000014
 
 
 
@@ -24,11 +24,11 @@ DGROUP                          0000004e             00000014
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-_ENTRY                 CODE           AUTO           00000000        00000010
-_TEXT                  CODE           AUTO           00000010        0000003d
-CONST                  DATA           DGROUP         0000004e        00000014
-CONST2                 DATA           DGROUP         00000062        00000000
-_DATA                  DATA           DGROUP         00000062        00000000
+_ENTRY                 CODE           AUTO           00000000        00000025
+_TEXT                  CODE           AUTO           00000025        0000003d
+CONST                  DATA           DGROUP         00000062        00000014
+CONST2                 DATA           DGROUP         00000076        00000000
+_DATA                  DATA           DGROUP         00000076        00000000
 
 
                         +----------------+
@@ -44,12 +44,12 @@ Address        Symbol
 Module: build/kernel/asm/main.obj(src/kernel/main.asm)
 00000000       entry
 Module: build/kernel/asm/print.obj(src/kernel/print.asm)
-00000010       _x86_Video_WriteCharTeletype
+00000025       _x86_Video_WriteCharTeletype
 Module: build/kernel/c/main.obj(main)
-00000023       _cstart_
+00000038       _cstart_
 Module: build/kernel/c/stdio.obj(stdio)
-00000029+      putc_
-0000003c       puts_
+0000003e+      putc_
+00000051       puts_
 
 
                         +---------------------+
@@ -63,17 +63,17 @@ Module          Segment               Class           Address         Size
 ======          =======               =====           =======         ====
 
 src/kernel/main.asm
-                _ENTRY                CODE           00000000         00000010
+                _ENTRY                CODE           00000000         00000025
 src/kernel/print.asm
-                _TEXT                 CODE           00000010         00000013
-main            _TEXT                 CODE           00000023         00000006
-                CONST                 DATA           0000004e         00000014
-                CONST2                DATA           00000062         00000000
-                _DATA                 DATA           00000062         00000000
-stdio           _TEXT                 CODE           00000029         00000024
-                CONST                 DATA           00000062         00000000
-                CONST2                DATA           00000062         00000000
-                _DATA                 DATA           00000062         00000000
+                _TEXT                 CODE           00000025         00000013
+main            _TEXT                 CODE           00000038         00000006
+                CONST                 DATA           00000062         00000014
+                CONST2                DATA           00000076         00000000
+                _DATA                 DATA           00000076         00000000
+stdio           _TEXT                 CODE           0000003e         00000024
+                CONST                 DATA           00000076         00000000
+                CONST2                DATA           00000076         00000000
+                _DATA                 DATA           00000076         00000000
 Warning! W1014: stack segment not found
 
 
@@ -82,6 +82,6 @@ Warning! W1014: stack segment not found
                         +-----------------------+
 
 Stack size:  0200 (512.)
-Memory size:  0062 (98.)
+Memory size:  0076 (118.)
 Entry point address: 00000000
-Link time: 00:00.30
+Link time: 00:00.80
