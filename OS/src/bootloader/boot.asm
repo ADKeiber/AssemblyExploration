@@ -259,7 +259,7 @@ done_print:
    POP si
    RET
 
-os_boot_msg: DB 'Our OS has booted!', 0x0D, 0x0A, 0 ; new line character and sentinel value
+os_boot_msg: DB 'Loading...', 0x0D, 0x0A, 0 ; new line character and sentinel value
 read_failure DB 'Failed to read disk!', 0x0D, 0x0A, 0
 file_kernel_bin DB 'KERNEL  BIN'
 msg_kernel_not_found DB 'KERNEL.BIN not found!'
