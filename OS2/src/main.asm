@@ -2,6 +2,12 @@ ORG 0x7C00  ; ORG tells the compiler to load Everything relative to 0x7C00. 0x7C
 BITS 16     ; Most processors start in 16 bit mode (for backwards compatibility) after initial setup it usually transforms into 32 or 64 bit respectively
 
 main:
+    MOV ax, 0
+    MOV ds, ax
+    MOV es, ax
+    MOV ss, ax
+    ; resets registers for bootloader
+    
     HTL     ; Pauses the CPU until a certain interrupt that occurs on the system
 
 halt:
