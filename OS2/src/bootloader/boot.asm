@@ -47,7 +47,7 @@ main:
 
     MOV si, os_boot_msg ; moves the os boot message address into the si register
     CALL print
-    HTL     ; Pauses the CPU until a certain interrupt that occurs on the system
+    hlt     ; Pauses the CPU until a certain interrupt that occurs on the system
 
 halt:
     JMP halt
@@ -122,7 +122,7 @@ retry:
 failDiskRead:
     MOV si, read_failure
     CALL print
-    HTL
+    hlt
     JMP halt
 
 diskReset: ; resets the disk so we can attempt to read again. This is required and defined in docs
