@@ -3,7 +3,7 @@ BITS 16     ; Most processors start in 16 bit mode (for backwards compatibility)
 
 ;Header of the disk
 JMP SHORT main ;Jump to start of bootloader code. NOTE: SHORT JMP mean jumping to something locally inside of this file
-NOP ; NO operation... just a seperator isn't needed but is convention             
+NOP ; NO operation... just a separator isn't needed but is convention             
 
 ; Header data declaration
 bdb_oem:                    DB 'MSWIN4.1'   ;
@@ -11,10 +11,10 @@ bdb_bytes_per_sector:       DW 512          ; Number of bytes per sector for flo
 bdb_sectors_per_cluster:    DB 1
 bdb_reserved_sectors:       DW 1 
 bdb_fat_count:              DB 2            ; How many file allocation files there are on the disk for floppy we use 2
-bdb_dir_entries_count:      DW 0E0h         ; the number of directory enteries on a disk
+bdb_dir_entries_count:      DW 0E0h         ; the number of directory entries on a disk
 bdb_total_sectors:          DW 2880         ; 2880 x 512 = 1.33 mb floppy disk
 bdb_media_descriptor_type:  DB 0F0h         ; specific value for a media type. In this instance its a floppy disk (0F0h) is used
-bdb_sectors_per_fat:        DW 9            ; Secotrs per file allocation table. For floppy disk its usually set to 9
+bdb_sectors_per_fat:        DW 9            ; Sectors per file allocation table. For floppy disk its usually set to 9
 bdb_sectors_per_track:      DW 18    
 bdb_heads:                  DW 2
 bdb_hidden_sectors:         DD 0
@@ -52,12 +52,12 @@ main:
     XOR bh, bh
     MUL bx      ; ax * bx ( this gets 2nd segment)
     ADD ax, [bdb_reserved_sectors] ; This is the amount of reserved sectors (in this case 1)... the result of this should be 20 (root directory location) LBA of root director
-    PUSH ax     ; perserve LBA root directory
+    PUSH ax     ; preserve LBA root directory
 
     MOV ax, [bdb_dir_entries_count]
     SHL ax, 5       ; ax *= 32 shift multiplies it by 2 (esentially)
     XOR dx, dx      ; clears out the remainder
-    DIV word [bdb_bytes_per_sector] ; (32 * num of entires)/ bytes per sector
+    DIV word [bdb_bytes_per_sector] ; (32 * num of entries)/ bytes per sector
 
     TEST dx, dx
     JZ rootDirAfter
@@ -172,7 +172,7 @@ halt:
 ; dh: head
 lba_to_chs:
 
-    ; Using these registers here.. Perserving data
+    ; Using these registers here.. Preserving data
     PUSH ax
     PUSH dx
 
@@ -189,7 +189,7 @@ lba_to_chs:
     DIV word [bdb_heads]
     MOV dh, dl  ; Moves head into proper register (DH)
 
-    ; copies data from al, which contains the sector number, into ch then shifts that data 6 bits and ors it out which esentially empties the 
+    ; copies data from al, which contains the sector number, into ch then shifts that data 6 bits and ors it out which essentially empties the 
     ; lower part of the CH register (CL) but keeps the data that was previously in CL in the higher order bits of CH (sector number)
     MOV ch, al
     SHL ah, 6
@@ -206,7 +206,7 @@ lba_to_chs:
 ; Read disk sectors interrupt https://stanislavs.org/helppc/int_13-2.html
 disk_read: ; Converts lba value to chs format. Tries to read using interrupt 13 
 
-    ; Perserving registers that we are going to use
+    ; Preserving registers that we are going to use
     PUSH ax
     PUSH bx
     PUSH cx
@@ -216,7 +216,7 @@ disk_read: ; Converts lba value to chs format. Tries to read using interrupt 13
     call lba_to_chs
 
     MOV ah, 02h
-    MOV di, 3       ;Counter to loop (for this interrupt we are supposted to try up to 3 times)
+    MOV di, 3       ;Counter to loop (for this interrupt we are supposed to try up to 3 times)
 
 retry:
     STC ;sets the carry!
@@ -238,11 +238,11 @@ failDiskRead:
     JMP halt
 
 diskReset: ; resets the disk so we can attempt to read again. This is required and defined in docs
-    ; perserve registers. push a pushes all general purpose register data onto the stack
+    ; preserve registers. push a pushes all general purpose register data onto the stack
     PUSHA
 
     MOV ah, 0   ; Resetting disk system
-    STC         ; we need this command incase the bios doesn't set the carry. This makes sure it does
+    STC         ; we need this command in case the bios doesn't set the carry. This makes sure it does
     INT 13h
     JC failDiskRead
     POPA ; restores registers
@@ -273,8 +273,8 @@ print_loop:
     JZ done_print   ; checks al and if its zero (JZ) then it will jump to done_print
 
     MOV ah, 0x0E ; 0x0E is a BIOS interrupt for printing a character to the screen
-    MOV bh, 0    ; page number as an arguement. Basically allows you to access different monitors if desired and print to them
-    INT 0x10     ; video interupt. Looks at ah for what it should do. In this instance it is telling it to print a character. (it prints AL)
+    MOV bh, 0    ; page number as an argument. Basically allows you to access different monitors if desired and print to them
+    INT 0x10     ; video interrupt. Looks at ah for what it should do. In this instance it is telling it to print a character. (it prints AL)
 
     JMP print_loop  ; keeps looping until al == 0 (sentinel value)
 
@@ -295,7 +295,7 @@ kernel_load_segment EQU 0x2000 ; We know 0x2000 is going to be available
 kernel_load_offset EQU 0
 
 TIMES 510-($-$$) DB 0    ; '$-$$' gives us the current size of the application and how many bytes it takes up. 
-;510 is the location in memory we want to create data for. So esentially after the application is loaded and up till 510 bytes there will be empty data
+;510 is the location in memory we want to create data for. So essentially after the application is loaded and up till 510 bytes there will be empty data
 DW 0AA55h   ; The bios is searching for this signature it is considered the signature of a valid boot record
 
-buffer: ;read from disk intterupt stores data here
+buffer: ;read from disk interrupt stores data here

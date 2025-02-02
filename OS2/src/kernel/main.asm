@@ -10,7 +10,7 @@ halt:
     JMP halt
 
 print:
-    ;Perserve values
+    ;Preserve values
     PUSH si
     PUSH ax
     PUSH bx
@@ -23,8 +23,8 @@ print_loop:
     JZ done_print   ; checks al and if its zero (JZ) then it will jump to done_print
 
     MOV ah, 0x0E ; 0x0E is a BIOS interrupt for printing a character to the screen
-    MOV bh, 0    ; page number as an arguement. Basically allows you to access different monitors if desired and print to them
-    INT 0x10     ; video interupt. Looks at ah for what it should do. In this instance it is telling it to print a character. (it prints AL)
+    MOV bh, 0    ; page number as an argument. Basically allows you to access different monitors if desired and print to them
+    INT 0x10     ; video interrupt. Looks at ah for what it should do. In this instance it is telling it to print a character. (it prints AL)
 
     JMP print_loop  ; keeps looping until al == 0 (sentinel value)
 
@@ -38,5 +38,5 @@ done_print:
 os_boot_msg: DB 'Our OS has booted!', 0x0D, 0x0A, 0 ; boot message with new line characters '0' is a sentinel value dictating to the program that the string is over
 
 TIMES 510-($-$$) DB 0    ; '$-$$' gives us the current size of the application and how many bytes it takes up. 
-;510 is the location in memory we want to create data for. So esentially after the application is loaded and up till 510 bytes there will be empty data
+;510 is the location in memory we want to create data for. So essentially after the application is loaded and up till 510 bytes there will be empty data
 DW 0AA55h   ; The bios is searching for this signature it is considered the signature of a valid boot record
