@@ -1,14 +1,7 @@
-ORG 0x7C00  ; ORG tells the compiler to load Everything relative to 0x7C00. 0x7C00 is the address that the BIOS loads everything... So setting this here allows the program to properly access bios data
+ORG 0x0  
 BITS 16     ; Most processors start in 16 bit mode (for backwards compatibility) after initial setup it usually transforms into 32 or 64 bit respectively
 
 main:
-    MOV ax, 0
-    MOV ds, ax  ; DS holds the start address for the data segment
-    MOV es, ax  ; es holds the start address for the extra segment
-    MOV ss, ax  ; ss hold the start address for the stop? stock?
-    ; resets registers for bootloader
-
-    MOV sp, 0x7C00 ;sets the stack bottom to be after our application code (0x7C00) so we can grow downwards!
     MOV si, os_boot_msg ; moves the os boot message address into the si register
     CALL print
     HTL     ; Pauses the CPU until a certain interrupt that occurs on the system

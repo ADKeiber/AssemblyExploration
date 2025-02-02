@@ -37,14 +37,6 @@ main:
 
     MOV sp, 0x7C00 ;sets the stack bottom to be after our application code (0x7C00) so we can grow downwards!
 
-    ; Performing/setting up call for read disk sectors here https://stanislavs.org/helppc/int_13-2.html
-    MOV [ebr_drive_number], dl  ; Moves value dl into address of EBR_drive_number
-    MOV ax, 1                   ; LBA index converting to CHS
-    MOV cl, 1                   ; Sector number
-    MOV bx, 0x7E00              ; Location of a buffer that we KNOW exists
-    call disk_read
-
-
     MOV si, os_boot_msg ; moves the os boot message address into the si register
     CALL print
     
@@ -101,6 +93,7 @@ searchKernel:
 kernelNotFound:
     MOV si, msg_kernel_not_found
     CALL print
+
     hlt
     JMP halt
 
@@ -140,6 +133,7 @@ loadKernelLoop:
 
     ; Next cluter found!
     MOV si, buffer
+    ADD si, ax
     MOV ax, [ds:si]
 
     OR dx, dx
@@ -291,7 +285,7 @@ done_print:
     POP si
     RET
 
-os_boot_msg: DB 'Our OS has booted!', 0x0D, 0x0A, 0 ; boot message with new line characters '0' is a sentinel value dictating to the program that the string is over
+os_boot_msg: DB 'Loading...', 0x0D, 0x0A, 0 ; boot message with new line characters '0' is a sentinel value dictating to the program that the string is over
 read_failure DB 'Failed to read disk!', 0x0D, 0x0A, 0
 file_kernel_bin DB 'KERNEL  BIN' ; 2 spaces is required for fat12 formatting. Needs to be 11 characters in length
 msg_kernel_not_found DB 'KERNEL.BIN not found!'
