@@ -94,7 +94,7 @@ kernelNotFound:
     MOV si, msg_kernel_not_found
     CALL print
 
-    hlt
+    HLT
     JMP halt
 
 foundKernel:
@@ -109,7 +109,7 @@ foundKernel:
 
     CALL disk_read
 
-    MOV bx, kernel_load_offset
+    MOV bx, kernel_load_segment
     MOV es, bx  ; in interrupt disk read.. buffer is es:bx so we can use them together
     MOV bx, kernel_load_offset
     ; Memory is now setup that we are going to load the data into
@@ -159,7 +159,7 @@ readFinish:
     MOV es, ax
     JMP kernel_load_segment:kernel_load_offset ; Jumps to the location of the kernel
 
-    hlt 
+    HLT 
 
 halt:
     JMP halt
@@ -234,7 +234,7 @@ retry:
 failDiskRead:
     MOV si, read_failure
     CALL print
-    hlt
+    HLT
     JMP halt
 
 diskReset: ; resets the disk so we can attempt to read again. This is required and defined in docs
