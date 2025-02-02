@@ -1,12 +1,11 @@
+ORG 0x0
 BITS 16
 
 section _ENTRY CLASS=CODE
 
 extern _cstart_
 
-global entry
-
-entry:
+main:
    CLI
    MOV ax, ds
    MOV ss, ax
