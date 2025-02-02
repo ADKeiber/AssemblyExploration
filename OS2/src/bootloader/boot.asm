@@ -47,7 +47,125 @@ main:
 
     MOV si, os_boot_msg ; moves the os boot message address into the si register
     CALL print
-    hlt     ; Pauses the CPU until a certain interrupt that occurs on the system
+    
+    ; Fat12 disk is in 4 different segments
+    ; 1st segment is reserved: 1 sector
+    ; 2nd segment is file allocation table (FAT): (9 *2) = 18 sectors (sectors per fat * fat count)
+    ; 3rd segment is root director.. located after the file allocation table (20th sector in this example)
+    ; Data
+
+    ;get the LBA of the root directory
+    MOV ax, [bdb_sectors_per_fat]
+    MOV bl, [bdb_fat_count]
+    XOR bh, bh
+    MUL bx      ; ax * bx ( this gets 2nd segment)
+    ADD ax, [bdb_reserved_sectors] ; This is the amount of reserved sectors (in this case 1)... the result of this should be 20 (root directory location) LBA of root director
+    PUSH ax     ; perserve LBA root directory
+
+    MOV ax, [bdb_dir_entries_count]
+    SHL ax, 5       ; ax *= 32 shift multiplies it by 2 (esentially)
+    XOR dx, dx      ; clears out the remainder
+    DIV word [bdb_bytes_per_sector] ; (32 * num of entires)/ bytes per sector
+
+    TEST dx, dx
+    JZ rootDirAfter
+    INC ax      ; If there is a remainder for the division we add 1 if there wasn't then we should jump in the above JZ (we are rounding up the division)
+
+; Read data from root directory from the disk
+ rootDirAfter:
+    MOV cl, al  ; number of sectors to read (size of root directory)
+    POP ax      ; LBA of the root directory
+    MOV dl, [ebr_drive_number]
+    MOV bx, buffer
+    CALL disk_read
+
+    XOR bx, bx
+    MOV di, buffer
+    ; At this point all files are loaded from the root and now we need to look for a specific one
+
+searchKernel:
+    MOV si, file_kernel_bin ; move file name into si
+    MOV cx, 11      ; Remember fat12 required this to be 11 in length
+    PUSH di
+    REPE CMPSB  ; Repeat a set of instruction comparison of bytes between file name and buffer
+    POP di
+    JE foundKernel ;compares file names with each other. If they are equal then we go to found kernel.. else loop
+
+    ADD di, 32 ; next entry
+    INC bx
+    CMP bx, [bdb_dir_entries_count]
+    JL searchKernel ; if there are files left to search then loop otherwise jump to kernelNotFound
+
+    JMP kernelNotFound
+
+kernelNotFound:
+    MOV si, msg_kernel_not_found
+    CALL print
+    hlt
+    JMP halt
+
+foundKernel:
+    ; find the cluster associated with the kernel
+    MOV ax, [di+26] ; di is the location of the kernel and 26 is the first logical cluster field
+    MOV [kernel_cluster], ax 
+
+    MOV ax, [bdb_reserved_sectors]
+    MOV bx, buffer
+    MOV cl, [bdb_sectors_per_fat]
+    MOV dl, [ebr_drive_number]
+
+    CALL disk_read
+
+    MOV bx, kernel_load_offset
+    MOV es, bx  ; in interrupt disk read.. buffer is es:bx so we can use them together
+    MOV bx, kernel_load_offset
+    ; Memory is now setup that we are going to load the data into
+
+loadKernelLoop:
+    MOV ax, [kernel_cluster]
+    ADD ax, 31 ; this is needed for floppy disk. We would want to change this if we are using a different disk
+    MOV cl, 1
+    MOV dl, [ebr_drive_number]
+    ; reading 1 cluster at a time
+    CALL disk_read
+
+    ADD bx, [bdb_bytes_per_sector]
+
+    ; need to find next cluster location
+    MOV ax, [kernel_cluster] ; (kernel cluster * 3) / 2 
+    MOV cx, 3
+    MUL cx
+    MOV cx, 2
+    DIV cx
+
+    ; Next cluter found!
+    MOV si, buffer
+    MOV ax, [ds:si]
+
+    OR dx, dx
+    JZ even
+
+odd:
+    SHR ax, 4
+    JMP nextClusterAfter
+even:
+    AND ax, 0x0FFF  ; gives us the other 12 bits
+
+nextClusterAfter:
+    CMP ax, 0x0FF8 ; checks to see if we have made it to the end of the fat table
+    JAE readFinish
+
+    MOV [kernel_cluster], ax
+    JMP loadKernelLoop
+
+readFinish:
+    MOV dl, [ebr_drive_number]
+    MOV ax, kernel_load_segment
+    MOV ds, ax
+    MOV es, ax
+    JMP kernel_load_segment:kernel_load_offset ; Jumps to the location of the kernel
+
+    hlt 
 
 halt:
     JMP halt
@@ -175,6 +293,15 @@ done_print:
 
 os_boot_msg: DB 'Our OS has booted!', 0x0D, 0x0A, 0 ; boot message with new line characters '0' is a sentinel value dictating to the program that the string is over
 read_failure DB 'Failed to read disk!', 0x0D, 0x0A, 0
+file_kernel_bin DB 'KERNEL  BIN' ; 2 spaces is required for fat12 formatting. Needs to be 11 characters in length
+msg_kernel_not_found DB 'KERNEL.BIN not found!'
+kernel_cluster DW 0
+
+kernel_load_segment EQU 0x2000 ; We know 0x2000 is going to be available 
+kernel_load_offset EQU 0
+
 TIMES 510-($-$$) DB 0    ; '$-$$' gives us the current size of the application and how many bytes it takes up. 
 ;510 is the location in memory we want to create data for. So esentially after the application is loaded and up till 510 bytes there will be empty data
 DW 0AA55h   ; The bios is searching for this signature it is considered the signature of a valid boot record
+
+buffer: ;read from disk intterupt stores data here
