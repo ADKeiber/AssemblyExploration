@@ -2,15 +2,14 @@ BITS 16
 
 section _TEXT class=CODE
 
-global _x86_Video_WriteCharTeletype ;exports function so other files can use the function
-
+global _x86_Video_WriteCharTeletype
 _x86_Video_WriteCharTeletype:
-    PUSH bp 
+    PUSH bp
     MOV bp, sp
 
     PUSH bx
 
-    MOV ah, 0E0h
+    MOV ah, 0Eh
     MOV al, [bp+4]
     MOV bh, [bp+6]
 
