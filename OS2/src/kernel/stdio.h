@@ -2,7 +2,7 @@
 
 void putc(char c);
 void puts(const char* str);
-void puts(const char far* s);
+void puts_f(const char far* s);
 void _cdecl printf(const char* fmt, ...);
 int * printf_number(int*, int, bool, int);
 
