@@ -172,5 +172,18 @@ int * printf_number(int* argp, int length, bool sign, int radix){
     do {
         uint32_t rem;
         x86_div64_32(number, radix, &number, &rem);
+        buffer[post++] = possibleChars[rem];
+
+    } while (number > 0);
+
+    if (sign && number_sign < 0){
+        buffer[pos++] = '-';
     }
+
+    while(--pos >= 0){
+        putc(buffer[pos]);
+    }
+
+    return argp;
+    
 }

@@ -3,4 +3,5 @@
 
 void _cdecl cstart_(){
     puts("Hello world from C!");
+    printf("Formatted: %% %c %s\r\n", 'f', "Hello");
 }
