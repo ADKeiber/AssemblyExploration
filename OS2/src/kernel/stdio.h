@@ -1,9 +1,10 @@
 #pragma once
+#include "../stdint.h"
 
 void putc(char c);
 void puts(const char* str);
-void puts_f(const char far* s);
 void _cdecl printf(const char* fmt, ...);
+void puts_f(const char far* s);
 int * printf_number(int*, int, bool, int);
 
 #define PRINTF_STATE_START 0
