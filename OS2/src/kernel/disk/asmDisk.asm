@@ -8,7 +8,7 @@ _x86_Disk_Reset:
     MOV bp, sp
 
     MOV ah, 0
-    MOV dl, [bp+4]  ; location of first paramter
+    MOV dl, [bp+4]
     STC
 
     INT 13h
