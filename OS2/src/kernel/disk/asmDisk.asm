@@ -7,24 +7,24 @@ _x86_Disk_Reset:
     PUSH bp
     MOV bp, sp
 
-    MOV ah, 0 ; indicated disk reset
-    MOV dl, [bp+4] ;location of first parameter
+    MOV ah, 0
+    MOV dl, [bp+4]  ; location of first paramter
     STC
 
-    INT 13h ; resets disk
+    INT 13h
     JC reset_error
 
-    MOV cx, 0
+    MOV cx,0
     MOV bx, [bp+6]
-    MOV [bx], cx
+    MOV [bx],cx
     JMP end_reset
 
 reset_error:
     MOV bx, [bp+6]
-    MOV cx, 1 ; 1 indicates that there is an error
-    MOV [bx], cx
+    MOV cx,1
+    MOV [bx],cx
 
 end_reset:
     MOV sp, bp
     POP bp
-    ret
+    RET
